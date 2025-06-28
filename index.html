@@ -2,22 +2,23 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8" />
-  <title>Jogo de Sobrevivência Zumbi</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Jogo de Tiro - HTML5 Canvas</title>
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
   <canvas id="game"></canvas>
 
-  <div class="hud" id="hud">
-    Vida: <span id="life">3</span> | 
-    Pontuação: <span id="score">0</span> | 
+  <div id="hud">
+    Vida: <span id="life">3</span> 
+    Pontuação: <span id="score">0</span> 
     Dificuldade: <span id="difficulty">0</span>
   </div>
 
-  <div class="message" id="gameOverMessage">
-    <div>Você foi devorado!</div>
-    <div>Pontuação final: <span id="finalScore">0</span></div>
-    <button class="restart-btn" id="restartBtn">Reiniciar</button>
+  <div id="gameOverMessage">
+    <h2>Fim de Jogo!</h2>
+    <p>Pontuação final: <span id="finalScore">0</span></p>
+    <button id="restartBtn">Reiniciar</button>
   </div>
 
   <script src="script.js"></script>

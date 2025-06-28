@@ -4,69 +4,62 @@
   padding: 0;
   box-sizing: border-box;
 }
-
-/* Corpo e html para ocupar toda a tela */
 html, body {
-  width: 100%;
   height: 100%;
-  overflow: hidden;
-  background-color: #000000;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background: #111;
   color: white;
-  user-select: none;
+  font-family: Arial, sans-serif;
+  overflow: hidden;
 }
-
-/* Canvas principal do jogo */
 #game {
   display: block;
+  background: #222;
+  position: fixed;
+  top: 0; left: 0;
   width: 100vw;
   height: 100vh;
-  cursor: crosshair;
-  background-color: #000000;
+  z-index: 0;
 }
-
-/* HUD fixo no topo esquerdo */
-.hud {
+#hud {
   position: fixed;
   top: 10px;
   left: 10px;
   font-size: 18px;
-  font-weight: bold;
-  text-shadow: 1px 1px 4px #000;
   z-index: 10;
+  user-select: none;
 }
-
-/* Mensagem de game over */
-.message {
+#hud span {
+  font-weight: bold;
+  margin-right: 20px;
+}
+#gameOverMessage {
+  display: none;
   position: fixed;
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  background: rgba(20, 20, 20, 0.85);
-  padding: 20px 30px;
-  border-radius: 8px;
-  font-size: 24px;
-  font-weight: 700;
+  background: rgba(0,0,0,0.85);
+  border: 2px solid white;
+  padding: 20px 40px;
   text-align: center;
-  color: #eee;
-  box-shadow: 0 0 15px #ff5555;
-  z-index: 100;
-  display: none;
+  z-index: 20;
+  border-radius: 8px;
 }
-
-/* Botão reiniciar */
-button.restart-btn {
+#gameOverMessage h2 {
+  margin-bottom: 15px;
+  font-size: 28px;
+  color: #ff5555;
+}
+#restartBtn {
   margin-top: 15px;
-  background: #ff5555;
+  padding: 10px 25px;
+  font-size: 16px;
+  background: #4CAF50;
   border: none;
-  padding: 10px 20px;
-  color: #fff;
-  font-size: 18px;
+  color: white;
   cursor: pointer;
-  border-radius: 6px;
-  transition: background 0.3s ease;
+  border-radius: 5px;
 }
-
-button.restart-btn:hover {
-  background: #ff0000;
+#restartBtn:hover {
+  background: #45a049;
 }
