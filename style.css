@@ -1,0 +1,72 @@
+/* Reset básico */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+/* Corpo e html para ocupar toda a tela */
+html, body {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background-color: #000000;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  color: white;
+  user-select: none;
+}
+
+/* Canvas principal do jogo */
+#game {
+  display: block;
+  width: 100vw;
+  height: 100vh;
+  cursor: crosshair;
+  background-color: #000000;
+}
+
+/* HUD fixo no topo esquerdo */
+.hud {
+  position: fixed;
+  top: 10px;
+  left: 10px;
+  font-size: 18px;
+  font-weight: bold;
+  text-shadow: 1px 1px 4px #000;
+  z-index: 10;
+}
+
+/* Mensagem de game over */
+.message {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: rgba(20, 20, 20, 0.85);
+  padding: 20px 30px;
+  border-radius: 8px;
+  font-size: 24px;
+  font-weight: 700;
+  text-align: center;
+  color: #eee;
+  box-shadow: 0 0 15px #ff5555;
+  z-index: 100;
+  display: none;
+}
+
+/* Botão reiniciar */
+button.restart-btn {
+  margin-top: 15px;
+  background: #ff5555;
+  border: none;
+  padding: 10px 20px;
+  color: #fff;
+  font-size: 18px;
+  cursor: pointer;
+  border-radius: 6px;
+  transition: background 0.3s ease;
+}
+
+button.restart-btn:hover {
+  background: #ff0000;
+}
