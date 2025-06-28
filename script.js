@@ -1,3 +1,12 @@
+// script.js completo com:
+// - HUD limpo
+// - Jogador e zumbis com aparência aprimorada
+// - Multiplicador por dificuldade
+// - Velocidade máxima de zumbi
+// - Mais zumbis conforme dificuldade
+// - Limite máximo de zumbis simultâneos
+// - Efeitos sonoros, rastro de balas, tela de pause com resultados anteriores
+
 const canvas = document.getElementById('game');
 const ctx = canvas.getContext('2d');
 
@@ -7,6 +16,24 @@ const difficultyEl = document.getElementById('difficulty');
 const gameOverMessage = document.getElementById('gameOverMessage');
 const finalScoreEl = document.getElementById('finalScore');
 const restartBtn = document.getElementById('restartBtn');
+
+let pauseOverlay = document.createElement('div');
+pauseOverlay.id = 'pauseOverlay';
+pauseOverlay.style.position = 'fixed';
+pauseOverlay.style.top = '0';
+pauseOverlay.style.left = '0';
+pauseOverlay.style.width = '100%';
+pauseOverlay.style.height = '100%';
+pauseOverlay.style.background = 'rgba(0,0,0,0.8)';
+pauseOverlay.style.display = 'none';
+pauseOverlay.style.color = 'white';
+pauseOverlay.style.zIndex = '30';
+pauseOverlay.style.textAlign = 'center';
+pauseOverlay.style.paddingTop = '20vh';
+pauseOverlay.innerHTML = '<h2>PAUSADO</h2><p>Pressione P para continuar</p><div id="lastScores"></div>';
+document.body.appendChild(pauseOverlay);
+
+let lastScores = [];
 
 function resizeCanvas() {
   canvas.width = window.innerWidth;
@@ -18,34 +45,38 @@ resizeCanvas();
 let player, bullets, zombies, keys;
 let score, canShoot, difficultyLevel, baseZombieSpeed, spawnInterval, spawnTimer;
 let gameRunning = false;
+let paused = false;
 let animationId = null;
+let bulletTrail = [];
+
+const shootSound = new Audio('shoot.mp3');
+const hitSound = new Audio('hit.mp3');
+const loseSound = new Audio('lose.mp3');
 
 function initGame() {
-  console.clear();
-  console.log('Init game');
-
   player = {
     x: canvas.width / 2 - 20,
     y: canvas.height / 2 - 20,
     width: 40,
     height: 40,
-    color: 'lime',
     life: 3
   };
 
   bullets = [];
   zombies = [];
+  bulletTrail = [];
   keys = {};
-
   score = 0;
   canShoot = true;
   difficultyLevel = 0;
   baseZombieSpeed = 1;
   spawnInterval = 1200;
   gameRunning = true;
+  paused = false;
 
   updateHUD();
   gameOverMessage.style.display = 'none';
+  pauseOverlay.style.display = 'none';
 
   if (spawnTimer) clearInterval(spawnTimer);
   spawnTimer = setInterval(spawnZombie, spawnInterval);
@@ -56,6 +87,14 @@ function initGame() {
 }
 
 document.addEventListener('keydown', e => {
+  if (e.key.toLowerCase() === 'p') {
+    paused = !paused;
+    pauseOverlay.style.display = paused ? 'block' : 'none';
+    if (!paused && gameRunning) {
+      animationId = requestAnimationFrame(draw);
+    }
+    return;
+  }
   keys[e.key.toLowerCase()] = true;
 });
 
@@ -64,7 +103,7 @@ document.addEventListener('keyup', e => {
 });
 
 canvas.addEventListener('mousedown', e => {
-  if (e.button !== 0 || !canShoot || !gameRunning) return;
+  if (e.button !== 0 || !canShoot || !gameRunning || paused) return;
 
   const rect = canvas.getBoundingClientRect();
   const mouseX = e.clientX - rect.left;
@@ -82,6 +121,8 @@ canvas.addEventListener('mousedown', e => {
   const dirY = (dy / dist) * speed;
 
   bullets.push({ x: startX, y: startY, width: 4, height: 4, vx: dirX, vy: dirY });
+  shootSound.currentTime = 0;
+  shootSound.play();
 
   canShoot = false;
   setTimeout(() => canShoot = true, 200);
@@ -99,26 +140,27 @@ function movePlayer() {
 }
 
 function spawnZombie() {
-  if (!gameRunning) return;
+  if (!gameRunning || zombies.length >= 15 || paused) return;
 
-  console.log('spawnZombie chamado');
+  const enemiesToSpawn = Math.min(15 - zombies.length, 1 + Math.floor(difficultyLevel / 2));
 
-  let edge = Math.floor(Math.random() * 4);
-  let x, y;
+  for (let i = 0; i < enemiesToSpawn; i++) {
+    let edge = Math.floor(Math.random() * 4);
+    let x, y;
 
-  if (edge === 0) { x = Math.random() * canvas.width; y = -40; }
-  if (edge === 1) { x = Math.random() * canvas.width; y = canvas.height + 40; }
-  if (edge === 2) { x = -40; y = Math.random() * canvas.height; }
-  if (edge === 3) { x = canvas.width + 40; y = Math.random() * canvas.height; }
+    if (edge === 0) { x = Math.random() * canvas.width; y = -40; }
+    if (edge === 1) { x = Math.random() * canvas.width; y = canvas.height + 40; }
+    if (edge === 2) { x = -40; y = Math.random() * canvas.height; }
+    if (edge === 3) { x = canvas.width + 40; y = Math.random() * canvas.height; }
 
-  zombies.push({
-    x: x,
-    y: y,
-    width: 40,
-    height: 40,
-    speed: baseZombieSpeed + difficultyLevel * 0.2,
-    color: 'green'
-  });
+    zombies.push({
+      x: x,
+      y: y,
+      width: 40,
+      height: 40,
+      speed: Math.min(6, baseZombieSpeed + difficultyLevel * 0.2)
+    });
+  }
 }
 
 function updateDifficulty() {
@@ -142,42 +184,46 @@ function updateHUD() {
   difficultyEl.textContent = difficultyLevel;
 }
 
-function drawUI() {
-  ctx.fillStyle = 'white';
-  ctx.font = '16px Arial';
-  ctx.fillText('Vida: ' + player.life, 10, 20);
-  ctx.fillText('Pontuação: ' + score, canvas.width - 160, 20);
-  ctx.fillText('Dificuldade: ' + difficultyLevel, 10, 40);
-}
-
 function draw() {
-  if (!gameRunning) {
+  if (!gameRunning || paused) {
     animationId = null;
-    console.log('Jogo parado');
     return;
   }
-
-  console.log('draw executando');
 
   movePlayer();
   ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-  // Desenha o player
-  ctx.fillStyle = player.color;
-  ctx.fillRect(player.x, player.y, player.width, player.height);
+  bulletTrail.push({ x: player.x + player.width / 2, y: player.y + player.height / 2, alpha: 1 });
+  bulletTrail = bulletTrail.slice(-20);
 
-  // Atualiza e desenha balas
+  bulletTrail.forEach(t => {
+    ctx.beginPath();
+    ctx.arc(t.x, t.y, 8, 0, Math.PI * 2);
+    ctx.fillStyle = `rgba(255,255,255,${t.alpha})`;
+    ctx.fill();
+    t.alpha -= 0.05;
+  });
+
+  // Jogador
+  ctx.beginPath();
+  ctx.arc(player.x + player.width / 2, player.y + player.height / 2, player.width / 2, 0, Math.PI * 2);
+  ctx.fillStyle = 'lime';
+  ctx.fill();
+  ctx.lineWidth = 2;
+  ctx.strokeStyle = '#00ff88';
+  ctx.stroke();
+  ctx.closePath();
+
+  // Balas
   ctx.fillStyle = 'red';
   bullets.forEach(b => {
     b.x += b.vx;
     b.y += b.vy;
+    ctx.fillRect(b.x, b.y, b.width, b.height);
   });
   bullets = bullets.filter(b => b.x >= 0 && b.x <= canvas.width && b.y >= 0 && b.y <= canvas.height);
-  bullets.forEach(b => ctx.fillRect(b.x, b.y, b.width, b.height));
 
-  // Atualiza zumbis e checa colisões
-  ctx.fillStyle = 'green';
-
+  // Zumbis
   let zombiesToRemove = new Set();
   let bulletsToRemove = new Set();
 
@@ -197,6 +243,8 @@ function draw() {
         bulletsToRemove.add(bi);
         const scoreMultiplier = 1 + difficultyLevel * 0.5;
         score += Math.floor(100 * scoreMultiplier);
+        hitSound.currentTime = 0;
+        hitSound.play();
         updateDifficulty();
         updateHUD();
       }
@@ -207,6 +255,7 @@ function draw() {
       player.life -= 1;
       updateHUD();
       if (player.life <= 0) {
+        loseSound.play();
         endGame();
       }
     }
@@ -215,21 +264,39 @@ function draw() {
   zombies = zombies.filter((_, i) => !zombiesToRemove.has(i));
   bullets = bullets.filter((_, i) => !bulletsToRemove.has(i));
 
-  zombies.forEach(z => ctx.fillRect(z.x, z.y, z.width, z.height));
+  zombies.forEach(z => {
+    const centerX = z.x + z.width / 2;
+    const centerY = z.y + z.height / 2;
+    const radius = z.width / 2;
 
-  drawUI();
+    ctx.beginPath();
+    ctx.arc(centerX, centerY, radius, 0, Math.PI * 2);
+    ctx.fillStyle = '#2e2e2e';
+    ctx.fill();
+    ctx.strokeStyle = '#444';
+    ctx.stroke();
+    ctx.closePath();
+
+    ctx.beginPath();
+    ctx.arc(centerX - 7, centerY - 5, 3, 0, Math.PI * 2);
+    ctx.arc(centerX + 7, centerY - 5, 3, 0, Math.PI * 2);
+    ctx.fillStyle = 'red';
+    ctx.fill();
+    ctx.closePath();
+  });
 
   animationId = requestAnimationFrame(draw);
 }
 
 function endGame() {
   gameRunning = false;
-  if(spawnTimer) clearInterval(spawnTimer);
-  if(animationId) cancelAnimationFrame(animationId);
+  if (spawnTimer) clearInterval(spawnTimer);
+  if (animationId) cancelAnimationFrame(animationId);
   animationId = null;
   finalScoreEl.textContent = score;
   gameOverMessage.style.display = 'block';
-  console.log('Game Over');
+  lastScores.unshift(score);
+  document.getElementById('lastScores').innerHTML = `<h3>Resultados:</h3><ul>${lastScores.slice(0,5).map(s => `<li>${s}</li>`).join('')}</ul>`;
 }
 
 restartBtn.addEventListener('click', () => {
@@ -238,19 +305,15 @@ restartBtn.addEventListener('click', () => {
 
 document.addEventListener('visibilitychange', () => {
   if (document.hidden) {
-    console.log('Página oculta: pausa o jogo');
     gameRunning = false;
-    if(spawnTimer) clearInterval(spawnTimer);
-    if(animationId) cancelAnimationFrame(animationId);
+    if (spawnTimer) clearInterval(spawnTimer);
+    if (animationId) cancelAnimationFrame(animationId);
     animationId = null;
   } else {
-    console.log('Página visível: retoma o jogo');
-    if (player.life > 0) {
+    if (player.life > 0 && !paused) {
       gameRunning = true;
       updateDifficulty();
-      if (!animationId) {
-        animationId = requestAnimationFrame(draw);
-      }
+      if (!animationId) animationId = requestAnimationFrame(draw);
     }
   }
 });
