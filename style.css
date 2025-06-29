@@ -1,65 +1,93 @@
-/* Reset básico */
-* {
+/* style.css */
+
+body, html {
   margin: 0;
   padding: 0;
-  box-sizing: border-box;
-}
-html, body {
-  height: 100%;
-  background: #111;
-  color: white;
-  font-family: Arial, sans-serif;
   overflow: hidden;
+  background: #000;
+  color: white;
+  font-family: sans-serif;
 }
-#game {
+
+canvas {
   display: block;
-  background: #000000;
-  position: fixed;
-  top: 0; left: 0;
-  width: 100vw;
-  height: 100vh;
-  z-index: 0;
+  background: #111;
+  filter: drop-shadow(0 0 5px lime) drop-shadow(0 0 10px lime);
+  cursor: url('https://www.google.com/url?sa=i&url=https%3A%2F%2Fpt.pngtree.com%2Ffree-png-vectors%2Fmira&psig=AOvVaw3O27qFsjuT5p1PHxUxCcUp&ust=1751250931686000&source=images&cd=vfe&opi=89978449&ved=0CBYQjRxqFwoTCPD0mo_MlY4DFQAAAAAdAAAAABAE'), crosshair;
+  /* O filtro aplica sombra verde brilhante, ideal para jogador */
 }
+
+
 #hud {
   position: fixed;
   top: 10px;
   left: 10px;
-  font-size: 18px;
   z-index: 10;
-  user-select: none;
-}
-#hud span {
-  font-weight: bold;
-  margin-right: 20px;
-}
-#gameOverMessage {
-  display: none;
-  position: fixed;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  background: rgba(0,0,0,0.85);
-  border: 2px solid white;
-  padding: 20px 40px;
-  text-align: center;
-  z-index: 20;
-  border-radius: 8px;
-}
-#gameOverMessage h2 {
-  margin-bottom: 15px;
-  font-size: 28px;
-  color: #ff5555;
-}
-#restartBtn {
-  margin-top: 15px;
-  padding: 10px 25px;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
   font-size: 16px;
-  background: #4CAF50;
-  border: none;
+}
+
+#gameOverMessage {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0,0,0,0.8);
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  z-index: 50;
+}
+
+#gameOverMessage h2 {
+  font-size: 2em;
+}
+
+#restartBtn, #startBtn, #returnMenuBtn {
+  margin-top: 20px;
+  padding: 10px 20px;
+  font-size: 16px;
+  background-color: #4CAF50;
   color: white;
-  cursor: pointer;
+  border: none;
   border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
 }
-#restartBtn:hover {
-  background: #45a049;
+
+#restartBtn:hover, #startBtn:hover, #returnMenuBtn:hover {
+  background-color: #45a049;
 }
+
+#startScreen input[type="text"],
+#startScreen input[type="range"] {
+  margin: 5px;
+}
+
+#previousScores {
+  list-style: none;
+  padding: 0;
+  margin-top: 10px;
+}
+
+#previousScores li {
+  color: #ccc;
+}
+
+/* Responsivo */
+@media (max-width: 600px) {
+  #hud {
+    font-size: 14px;
+  }
+  #restartBtn, #startBtn, #returnMenuBtn {
+    font-size: 14px;
+    padding: 8px 16px;
+  }
+}
+
+
